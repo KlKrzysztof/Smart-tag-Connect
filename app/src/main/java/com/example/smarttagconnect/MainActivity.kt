@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var adapter: ArrayAdapter<String>
     val itemList = mutableListOf<String>()
     val foundDevices = mutableListOf<BluetoothDevice>()
+    private lateinit var serviceIntent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +57,10 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(ACCESS_FINE_LOCATION), 1)
         }
 
+        //create service for BLE connection
+        serviceIntent = Intent(this, BLEConnectionService::class.java)
+        startService(serviceIntent)
+
         buttonScan = findViewById(R.id.Button_scan)
 
         buttonScan.setOnClickListener({button_Scan_Click()})
@@ -64,11 +69,19 @@ class MainActivity : AppCompatActivity() {
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, itemList)
         BLEDeviceView.adapter = adapter
 
+
+
         BLEDeviceView.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = itemList[position]
             Toast.makeText(this, "Connecting to: $selectedItem", Toast.LENGTH_SHORT).show()
 
             val selectedDevice = foundDevices[position]
+
+            val intent = Intent(this, DeviceActivity::class.java)
+            intent.putExtra("deviceAddress", selectedDevice.address)
+            startActivity(intent)
+
+            /*
 
             selectedDevice.connectGatt(this, false, object : BluetoothGattCallback() {
                 override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
@@ -86,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d("BLE", "service: ${service.uuid}")
                     }
                 }
-            })
+            })*/
         }
     }
 
